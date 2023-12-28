@@ -15,7 +15,7 @@ app.use((err, req, res, next) => {
     console.log("error: ", err);
     res.status(400).json({
         status: "fail",
-        message: err.message
+        message: err
     });
 });
 

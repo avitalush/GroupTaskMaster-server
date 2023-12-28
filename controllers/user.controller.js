@@ -1,7 +1,9 @@
 const bcrypt = require("bcryptjs")
 const { User } = require("../models/User.model")
+const { Project } = require("../models/project.model")
 const Joi = require("joi")
 const { generateToken } = require("../utils/jwt")
+const mongoose = require("mongoose");
 
 
 const UserJoiSchema = {
@@ -28,20 +30,17 @@ exports.register = async (req, res, next) => {
         const validate = UserJoiSchema.register.validate(body);
         console.log("validate: ", validate);
         if (validate.error) {
-            next(Error(validate.error));
+            return next("Error validate");
         }
         if (await checkIfUserExists(body.email)) {
-            next(Error("already exist"));
+            return next(Error = "user alrady exist");
         }
         const newUser = new User(body);
         newUser.id = newUser._id;
-        console.log(newUser);
         const hash = await bcrypt.hash(body.password, 10);
         newUser.password = hash;
-        console.log(newUser);
-
         await newUser.save();
-        return res.status(201).send(newUser)
+        return res.status(201).send("user registered")
     } catch (error) {
         next(error)
     }
@@ -55,18 +54,21 @@ exports.login = async (req, res, next) => {
     try {
         const validate = UserJoiSchema.login.validate(body);
         if (validate.error) {
-            next(Error(validate.error));
+            return next(Error(validate.error));
         }
 
         //check is User exists
         const User = await checkIfUserExists(body.email);
         // if exsits check if password match
         if (!User || ! await bcrypt.compare(body.password, User.password)) {
-            next(Error('Password or email not valid'));
+            return next(Error('Password or email not valid'));
         }
         //* generate jwt token
         const token = generateToken(User);
-        return res.status(201).send({ User, token });
+        const projects = await Project.find();
+        const allProjectsFromUser = projects.filter((project) => project.users.includes(new mongoose.Types.ObjectId(User.id)) || project.admin == User.id);
+        
+        return res.status(201).send({ allProjectsFromUser, token });
         // send the User object to the client
     } catch (error) {
         next(error);
@@ -92,6 +94,29 @@ exports.editUser = async (req, res, next) => {
 
 
 exports.deleteUser = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        await User.deleteOne({ id });
+        res.status(200).send("deleted");
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getAllUsers = async (req, res, next) => {
+    console.log("success from getAllUsers");
+    try {
+        const id = req.params.id;
+        await User.deleteOne({ id });
+        res.status(200).send("deleted");
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getUserById = async (req, res, next) => {
+    console.log("success from getUserById");
+    let userId = req.query.userId;
     try {
         const id = req.params.id;
         await User.deleteOne({ id });
