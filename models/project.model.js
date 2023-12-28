@@ -30,7 +30,14 @@ const projectSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
         default: true
+    },
+    color: {
+        type: String,
+        required: true,
+        default: "red"
+
     }
+
 });
 
 const project = mongoose.model("project", projectSchema);

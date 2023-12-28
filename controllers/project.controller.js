@@ -204,12 +204,25 @@ exports.deleteProject = async (req, res, next) => {
     };
 }
 
-exports.findProjectById = async (req, res, next) => {
-    console.log("success from findProjectById");
+exports.findProjectByIdReturnTasks = async (req, res, next) => {
+    console.log("success from findProjectByIdReturnTasks");
     const id = req.params.id;
     console.log(id);
     try {
         const Project = await Project.findOne({ "id": id });
+        res.send(Project);
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.findProjectByIdReturnUsers = async (req, res, next) => {
+    console.log("success from findProjectByIdReturnUsers");
+    const id = req.params.id;
+    console.log(id);
+    try {
+        const Project = await Project.findOne({ "id": id });
+        console.log(Project.users);
         res.send(Project);
     } catch (error) {
         next(error);
