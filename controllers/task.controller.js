@@ -1,5 +1,5 @@
 const { Task } = require("../models/task.model")
-//const { Project } = require("../models/project.model")
+const { Project } = require("../models/project.model")
 const Joi = require("joi")
 const mongoose = require("mongoose");
 
@@ -33,7 +33,7 @@ exports.createTask = async (req, res, next) => {
         newTask.id = newTask._id;
 
         await newTask.save();
-        return res.status(201).send(newTask)
+        return res.status(201).json({status: "success"})
     } catch (error) {
         next(error)
     }
