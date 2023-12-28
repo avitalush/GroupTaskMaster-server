@@ -36,8 +36,10 @@ const projectSchema = new mongoose.Schema({
         required: true,
         default: "red"
 
-    }
-
+    },
+    categories: [{
+        type: String
+    }]
 });
 
 const project = mongoose.model("project", projectSchema);

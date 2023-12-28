@@ -1,6 +1,8 @@
 const { Project } = require("../models/project.model")
+const { Task } = require("../models/task.model")
+// const { User } = require("../models/user.model")
 const Joi = require("joi")
-// const { User } = require("../models/User.model")
+const mongoose = require("mongoose");
 
 
 // const ProjectJoiSchema = {
@@ -43,7 +45,7 @@ exports.removeUser = async (req, res, next) => {
     console.log("success from removeUser");
     const projectId = req.query.projectId;
     const userId = req.query.userId;
-   
+
     try {
         const project = await Project.findOne({ id: projectId });
         if (project.admin != res.locals.userId) {
@@ -84,7 +86,7 @@ exports.removeTask = async (req, res, next) => {
     console.log("success from removeUser");
     const projectId = req.query.projectId;
     const userId = req.query.userId;
-   
+
     try {
         const project = await Project.findOne({ id: projectId });
         if (project.admin != res.locals.userId) {
@@ -104,7 +106,7 @@ exports.editTask = async (req, res, next) => {
     console.log("success from removeUser");
     const projectId = req.query.projectId;
     const userId = req.query.userId;
-   
+
     try {
         const project = await Project.findOne({ id: projectId });
         if (project.admin != res.locals.userId) {
@@ -207,10 +209,14 @@ exports.deleteProject = async (req, res, next) => {
 exports.findProjectByIdReturnTasks = async (req, res, next) => {
     console.log("success from findProjectByIdReturnTasks");
     const id = req.params.id;
-    console.log(id);
     try {
-        const Project = await Project.findOne({ "id": id });
-        res.send(Project);
+        let tasks = await Task.find({});
+        tasks = tasks.filter((task) => { console.log(task.project == id); return task.project == id;})
+        console.log(tasks);
+        res.status(200).json({
+            status: 'success',
+            tasks
+        });
     } catch (error) {
         next(error);
     }
@@ -219,11 +225,13 @@ exports.findProjectByIdReturnTasks = async (req, res, next) => {
 exports.findProjectByIdReturnUsers = async (req, res, next) => {
     console.log("success from findProjectByIdReturnUsers");
     const id = req.params.id;
-    console.log(id);
     try {
-        const Project = await Project.findOne({ "id": id });
-        console.log(Project.users);
-        res.send(Project);
+        const project = await Project.findById(id).populate('users');
+        console.log(project.users);
+        res.status(200).json({
+            status: 'success',
+            users: project.users
+        });
     } catch (error) {
         next(error);
     }

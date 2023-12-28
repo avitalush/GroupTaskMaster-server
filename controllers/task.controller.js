@@ -33,7 +33,7 @@ exports.createTask = async (req, res, next) => {
         newTask.id = newTask._id;
 
         await newTask.save();
-        return res.status(201).send(newTask)
+        return res.status(201).json({status: "success"})
     } catch (error) {
         next(error)
     }
