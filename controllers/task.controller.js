@@ -33,7 +33,35 @@ exports.createTask = async (req, res, next) => {
         newTask.id = newTask._id;
 
         await newTask.save();
-        return res.status(201).json({status: "success"})
+        return res.status(201).json({ status: "success" })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.createTasks = async (req, res, next) => {
+    console.log("success from createTasks");
+    const body = req.body;
+    const projectId = req.query.projectId;
+    console.log("body:", body);
+    try {
+        // const validate = TaskJoiSchema.createTask.validate(body);
+        // console.log("validate: ", validate);
+        // if (validate.error) {
+        //     next(Error(validate.error));
+        // }
+        const project = await Project.findOne({ id: projectId });
+        if (project.admin != res.locals.userId) {
+            return res.status(400).json({ error: 'Only admin can add tasks to the project' });
+        }
+        body.map(async (task) => {
+            const newTask = new Task(task);
+            newTask.project = projectId;
+            newTask.id = newTask._id;
+            await newTask.save();
+        })
+
+        return res.status(201).json({ status: "success" })
     } catch (error) {
         next(error)
     }
@@ -76,7 +104,7 @@ exports.addUserToTask = async (req, res, next) => {
     console.log("success from addUserToTask");
     const taskId = req.params.id;
     let userId = req.query.userId;
-    if(!userId){
+    if (!userId) {
         userId = res.locals.userId;
     }
     try {
@@ -88,16 +116,16 @@ exports.addUserToTask = async (req, res, next) => {
             if (!project.permissiontoAssociateTasks) {
                 return res.status(400).json({ error: 'Only admin can add users to this project' });
             }
-            if(userIndex === -1){
+            if (userIndex === -1) {
                 return res.status(400).json({ error: 'user do not exist in the project' });
             }
-            task = await Task.findOneAndUpdate({ id: taskId }, { user: res.locals.userId }, {new: true});
+            task = await Task.findOneAndUpdate({ id: taskId }, { user: res.locals.userId }, { new: true });
         }
         else {
-            if(userIndex === -1 && project.admin != userId){
+            if (userIndex === -1 && project.admin != userId) {
                 return res.status(400).json({ error: 'user do not exist in the project' });
             }
-            task = await Task.findOneAndUpdate({ id: taskId }, { user: userId }, {new: true});
+            task = await Task.findOneAndUpdate({ id: taskId }, { user: userId }, { new: true });
         }
         res.status(200).send(task);
     } catch (error) {
