@@ -1,5 +1,5 @@
 const express = require("express");
-const { createTask, editTask, deleteTask, findTaskById, addUserToTask, createTasks } = require("../controllers/task.controller");
+const { createTask, editTask, deleteTask, findTaskById, addUserToTask, createTasks, addNote, editNote, deleteNote } = require("../controllers/task.controller");
 const router = express.Router();
 const { auth } = require("../middlewares/auth");
 
@@ -11,6 +11,9 @@ router.patch("/editTask/:id", auth(), editTask);
 router.delete("/deleteTask/:id", auth(), deleteTask);
 router.patch("/addUserToTask/:id", auth(), addUserToTask);
 router.get("/findTaskById/:id", findTaskById);
+router.post("/addNote", auth(), addNote);
+router.patch("/editNote", auth(), editNote);
+router.delete("/deleteNote", auth(), deleteNote);
 
 
 module.exports = router;
