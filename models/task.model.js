@@ -38,7 +38,8 @@ const taskSchema = new mongoose.Schema({
     },
     categories: [{
         type: String
-    }]
+    }],
+    notes: [{    }]
 });
 
 const task = mongoose.model("task", taskSchema);
