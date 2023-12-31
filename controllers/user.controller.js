@@ -67,7 +67,7 @@ exports.login = async (req, res, next) => {
         const token = generateToken(User);
         const projects = await Project.find();
         const allProjectsFromUser = projects.filter((project) => project.users.includes(new mongoose.Types.ObjectId(User.id)) || project.admin == User.id);
-        
+
         return res.status(201).send({ allProjectsFromUser, token });
         // send the User object to the client
     } catch (error) {
@@ -75,6 +75,19 @@ exports.login = async (req, res, next) => {
     }
 };
 
+exports.getProjectsFromUser = async (req, res, next) => {
+
+    const userId = req.query.userId;
+
+    try {
+        const projects = await Project.find();
+        const allProjectsFromUser = projects.filter((project) => project.users.includes(new mongoose.Types.ObjectId(userId)) || project.admin == userId);
+        return res.status(201).json({status: "success", projects: allProjectsFromUser });
+
+    } catch (error) {
+        next(error);
+    }
+}
 
 exports.editUser = async (req, res, next) => {
     const id = req.params.id;
@@ -121,7 +134,7 @@ exports.getUserById = async (req, res, next) => {
     let userId = req.query.userId;
     console.log(userId);
     try {
-        const user = await User.find({id: userId});
+        const user = await User.find({ id: userId });
         res.status(200).json({
             status: "success",
             user
