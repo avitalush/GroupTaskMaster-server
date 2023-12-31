@@ -106,9 +106,11 @@ exports.deleteUser = async (req, res, next) => {
 exports.getAllUsers = async (req, res, next) => {
     console.log("success from getAllUsers");
     try {
-        const id = req.params.id;
-        await User.deleteOne({ id });
-        res.status(200).send("deleted");
+        const users = await User.find();
+        res.status(200).json({
+            status: "success",
+            users
+        });
     } catch (error) {
         next(error);
     }
@@ -117,10 +119,13 @@ exports.getAllUsers = async (req, res, next) => {
 exports.getUserById = async (req, res, next) => {
     console.log("success from getUserById");
     let userId = req.query.userId;
+    console.log(userId);
     try {
-        const id = req.params.id;
-        await User.deleteOne({ id });
-        res.status(200).send("deleted");
+        const user = await User.find({id: userId});
+        res.status(200).json({
+            status: "success",
+            user
+        });
     } catch (error) {
         next(error);
     }
