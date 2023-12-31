@@ -156,35 +156,11 @@ exports.addNote = async (req, res, next) => {
         const project = await Project.findOne({ id: new mongoose.Types.ObjectId(task.project) });
         console.log(project);
         if (project.admin == res.locals.userId) {
-            task.notes.push({note, own: "admin"})
+            task.notes.push({ note, own: "admin" })
             await task.save();
         }
         else if (task.user == res.locals.userId) {
-            task.notes.push({note, own: "user"})
-            await task.save();
-        }
-        else {
-            return res.status(400).json({ status: "fail", msg: "Only admin or associated usercan add a note to the task" })
-        }
-        return res.status(201).json({ status: "success"})
-    } catch (error) {
-        next(error)
-    }
-}
-exports.editNote = async (req, res, next) => {
-    console.log("success from editNote");
-    const note = req.body.note;
-    const taskId = req.query.taskId;
-    const index = req.query.index; 
-    try {
-        const task = await Task.findOne({ id: taskId });
-        const project = await Project.findOne({ id: new mongoose.Types.ObjectId(task.project) });
-        if (project.admin == res.locals.userId) {
-            task.notes[index] = {note: note, own: "admin"}
-            await task.save();
-        }
-        else if (task.user == res.locals.userId) {
-            task.notes[index] = {note: note, own: "user"}
+            task.notes.push({ note, own: "user" })
             await task.save();
         }
         else {
@@ -195,25 +171,79 @@ exports.editNote = async (req, res, next) => {
         next(error)
     }
 }
-exports.deleteNote = async (req, res, next) => {
-    console.log("success from deleteNote");
+exports.editNote = async (req, res, next) => {
+    console.log("success from editNote");
     const note = req.body.note;
     const taskId = req.query.taskId;
-    console.log("body:", note);
+    const index = req.query.index;
     try {
         const task = await Task.findOne({ id: taskId });
         const project = await Project.findOne({ id: new mongoose.Types.ObjectId(task.project) });
         if (project.admin == res.locals.userId) {
-            task.notes.push({note, own: "admin"})
+            if (task.notes[index].own === 'admin')
+                task.notes[index] = { note: note, own: "admin" }
+            else
+                return res.status(400).json({ status: "fail", msg: "Only user can edit this note" })
             await task.save();
         }
         else if (task.user == res.locals.userId) {
-            task.notes.push({note, own: "user"})
+            if (task.notes[index].own === 'user')
+                task.notes[index] = { note: note, own: "user" }
+            else
+                return res.status(400).json({ status: "fail", msg: "Only admin can edit this note" })
             await task.save();
         }
         else {
-            return res.status(400).json({ status: "fail", msg: "Only admin or associated usercan add a note to the task" })
+            return res.status(400).json({ status: "fail", msg: "Only admin or associated user can edit this note" })
         }
+        return res.status(201).json({ status: "success" })
+    } catch (error) {
+        next(error)
+    }
+}
+exports.deleteNote = async (req, res, next) => {
+    console.log("success from deleteNote");
+    const taskId = req.query.taskId;
+    const index = req.query.index;
+    try {
+        const task = await Task.findOne({ id: taskId });
+        const project = await Project.findOne({ id: new mongoose.Types.ObjectId(task.project) });
+        if (project.admin == res.locals.userId) {
+            if (task.notes[index].own === 'admin')
+                task.notes.splice(index, 1);
+            else
+                return res.status(400).json({ status: "fail", msg: "Only user can delete this note" })
+            await task.save();
+        }
+        else if (task.user == res.locals.userId) {
+            if (task.notes[index].own === 'admin')
+                task.notes.splice(index, 1);
+            else
+                return res.status(400).json({ status: "fail", msg: "Only admin can delete this note" })
+            await task.save();
+        }
+        else {
+            return res.status(400).json({ status: "fail", msg: "Only admin or associated user can delete this note" })
+        }
+        return res.status(201).json({ status: "success" })
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.changeStatus = async (req, res, next) => {
+    console.log("success from changeStatus");
+    const taskId = req.query.taskId;
+    const status = req.query.status;
+    try {
+        const task = await Task.findOne({ id: taskId });
+        const project = await Project.findOne({ id: new mongoose.Types.ObjectId(task.project) });
+        console.log(project.admin, task.user, res.locals.userId);
+        if (project.admin != res.locals.userId && task.user != res.locals.userId) {
+            return res.status(400).json({ status: "fail", msg: "Only admin or associated user can change status" })
+        }
+        task.status = status
+        await task.save();
         return res.status(201).json({ status: "success" })
     } catch (error) {
         next(error)
