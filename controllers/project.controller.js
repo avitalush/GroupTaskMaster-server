@@ -40,6 +40,33 @@ exports.addUser = async (req, res, next) => {
         next(error);
     }
 }
+exports.addUsers = async (req, res, next) => {
+    console.log("success from addUsers");
+    const projectId = req.query.projectId;
+    const usersId = req.query.userId.split(',');
+    console.log(usersId);
+    try {
+        const project = await Project.findOne({ id: projectId });
+        if (project.admin != res.locals.userId) {
+            return res.status(400).json({ error: 'Only admin can add users to the project' });
+        }
+        if (usersId.includes(project.admin)) { // 2 and not 3 equals cheks if the value is the same even if the types are not the same
+            return res.status(400).json({ error: 'Admin cannot be a user' });
+        }
+        
+        usersId.map(async (user) => {
+            if (project.users.includes(user)) {
+                return res.status(400).json({ error: `User ${user} already exists in the project` });
+            }
+            project.users.push(user);
+            await project.save();
+        })
+
+        res.status(201).send(project);
+    } catch (error) {
+        next(error);
+    }
+}
 
 exports.removeUser = async (req, res, next) => {
     console.log("success from removeUser");
@@ -166,7 +193,7 @@ exports.createProject = async (req, res, next) => {
         newProject.admin = res.locals.userId;
 
         await newProject.save();
-        return res.status(201).send(newProject)
+        return res.status(201).json({status: "success"})
     } catch (error) {
         next(error)
     }
@@ -183,7 +210,7 @@ exports.editProject = async (req, res, next) => {
             return res.status(400).json({ error: 'Only admin can edit the project' });
         }
         await Project.updateOne({ id }, body);
-        res.status(201).send("update Project");
+        res.status(201).json({status: "success"})
     } catch (error) {
         next(error);
     }
@@ -200,7 +227,7 @@ exports.deleteProject = async (req, res, next) => {
             return res.status(400).json({ error: 'Only admin can delete a project' });
         }
         await Project.deleteOne({ id });
-        res.status(200).send("deleted");
+        res.status(200).json({status: "success"})
     } catch (error) {
         next(error);
     };
