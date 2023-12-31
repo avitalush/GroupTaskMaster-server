@@ -193,7 +193,7 @@ exports.createProject = async (req, res, next) => {
         newProject.admin = res.locals.userId;
 
         await newProject.save();
-        return res.status(201).json({status: "success"})
+        return res.status(201).json({status: "success", project: newProject})
     } catch (error) {
         next(error)
     }
