@@ -230,3 +230,22 @@ exports.deleteNote = async (req, res, next) => {
         next(error)
     }
 }
+
+exports.changeStatus = async (req, res, next) => {
+    console.log("success from changeStatus");
+    const taskId = req.query.taskId;
+    const status = req.query.status;
+    try {
+        const task = await Task.findOne({ id: taskId });
+        const project = await Project.findOne({ id: new mongoose.Types.ObjectId(task.project) });
+        console.log(project.admin, task.user, res.locals.userId);
+        if (project.admin != res.locals.userId && task.user != res.locals.userId) {
+            return res.status(400).json({ status: "fail", msg: "Only admin or associated user can change status" })
+        }
+        task.status = status
+        await task.save();
+        return res.status(201).json({ status: "success" })
+    } catch (error) {
+        next(error)
+    }
+}
