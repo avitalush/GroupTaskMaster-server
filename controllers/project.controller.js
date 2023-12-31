@@ -47,13 +47,15 @@ exports.addUsers = async (req, res, next) => {
     console.log(usersId);
     try {
         const project = await Project.findOne({ id: projectId });
+        if (!project)
+            return res.status(400).json({ error: 'project do not exist' });
         if (project.admin != res.locals.userId) {
             return res.status(400).json({ error: 'Only admin can add users to the project' });
         }
         if (usersId.includes(project.admin)) { // 2 and not 3 equals cheks if the value is the same even if the types are not the same
             return res.status(400).json({ error: 'Admin cannot be a user' });
         }
-        
+
         usersId.map(async (user) => {
             if (project.users.includes(user)) {
                 return res.status(400).json({ error: `User ${user} already exists in the project` });
@@ -193,7 +195,7 @@ exports.createProject = async (req, res, next) => {
         newProject.admin = res.locals.userId;
 
         await newProject.save();
-        return res.status(201).json({status: "success", project: newProject})
+        return res.status(201).json({ status: "success", project: newProject })
     } catch (error) {
         next(error)
     }
@@ -210,7 +212,7 @@ exports.editProject = async (req, res, next) => {
             return res.status(400).json({ error: 'Only admin can edit the project' });
         }
         await Project.updateOne({ id }, body);
-        res.status(201).json({status: "success"})
+        res.status(201).json({ status: "success" })
     } catch (error) {
         next(error);
     }
@@ -227,7 +229,7 @@ exports.deleteProject = async (req, res, next) => {
             return res.status(400).json({ error: 'Only admin can delete a project' });
         }
         await Project.deleteOne({ id });
-        res.status(200).json({status: "success"})
+        res.status(200).json({ status: "success" })
     } catch (error) {
         next(error);
     };
@@ -238,7 +240,7 @@ exports.findProjectByIdReturnTasks = async (req, res, next) => {
     const id = req.params.id;
     try {
         let tasks = await Task.find({});
-        tasks = tasks.filter((task) => { console.log(task.project == id); return task.project == id;})
+        tasks = tasks.filter((task) => { console.log(task.project == id); return task.project == id; })
         console.log(tasks);
         res.status(200).json({
             status: 'success',
