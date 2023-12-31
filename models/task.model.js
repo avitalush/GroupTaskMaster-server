@@ -35,7 +35,10 @@ const taskSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'Project',
         required: true,
-    }
+    },
+    categories: [{
+        type: String
+    }]
 });
 
 const task = mongoose.model("task", taskSchema);
