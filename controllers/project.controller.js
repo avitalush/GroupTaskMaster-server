@@ -3,6 +3,13 @@ const { Task } = require("../models/task.model")
 // const { User } = require("../models/user.model")
 const Joi = require("joi")
 const mongoose = require("mongoose");
+const SMTPConnection = require("nodemailer/lib/smtp-connection");
+
+
+const today = new Date();
+const someDay = new Date("2024-1-1")
+console.log();
+
 
 
 // const ProjectJoiSchema = {
@@ -264,4 +271,47 @@ exports.findProjectByIdReturnUsers = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+}
+
+exports.graph = async (req, res, next) => {
+    console.log("success from graph");
+    const projectId = req.query.projectId;
+    try {
+        const tasks = await Task.find({ project: new mongoose.Types.ObjectId(projectId) })
+        const task_len = tasks.length;
+        tasks[10] = 90;
+        console.log(tasks, task_len);
+        calculateGraph(tasks);
+        res.status(200).json({
+            status: 'success'
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+const calculateGraph = (tasks) => {
+    const today = new Date();
+    const daysForProject = Math.floor((today - tasks[0].date_created) / (1000 * 3600 * 24));
+    let numberOfTasks = 0;
+    let inProgress = 0;
+    let done = 0;
+    let error = 0;
+    tasks.map((task) => {
+        switch (task.status) {
+            
+            case "inProgress":
+                ++inProgress;
+                break;
+            case "done":
+                ++done;
+                break;
+            case "error":
+                ++error;
+                break;
+        
+            default:
+                break;
+        }
+    })
 }
