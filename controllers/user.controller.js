@@ -4,6 +4,12 @@ const { Project } = require("../models/project.model")
 const Joi = require("joi")
 const { generateToken } = require("../utils/jwt")
 const mongoose = require("mongoose");
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+
+const resetTokens = {};
+
 
 
 const UserJoiSchema = {
@@ -75,6 +81,81 @@ exports.login = async (req, res, next) => {
     }
 };
 
+exports.forgetPassword = async (req, res, next) => {
+    console.log("success from forgetPassword");
+    const email = req.body.email;
+    console.log(email);
+    try {
+
+        const user = await checkIfUserExists(email);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const resetToken = crypto.randomBytes(20).toString('hex');
+        resetTokens[resetToken] = user.id;
+
+
+        const transporter = nodemailer.createTransport({
+            service: 'outlook', // Use the email service provider, e.g., Gmail
+            auth: {
+                user: process.env.EMAIL_USER, // Your email address
+                pass: process.env.EMAIL_PASSWORD // Your email password (or an app-specific password)
+            }
+        });
+
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Password Reset',
+            text: `Click on the following link to reset your password: http://localhost:1200/api/v1/users/resetPassword/${resetToken}`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error:', error);
+            } else {
+                console.log('Email sent:', info.response);
+            }
+        });
+        // Close the transporter
+        transporter.close();
+
+        return res.status(201).send({ status: "success", msg: "send email" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.resetPassword = async (req, res, next) => {
+    console.log("success from resetPassword");
+
+    const { token } = req.params;
+    const newPassword = req.body.newPassword;
+    const userId = resetTokens[token];
+
+    if (!userId) {
+        return res.status(400).json({ status: "fail", message: 'Invalid or expired token' });
+    }
+
+    try {
+        const user = await User.findById(userId);
+        const hash = await bcrypt.hash(newPassword, 10);
+
+        user.password = hash;
+        await user.save();
+
+
+    } catch (error) {
+        next(error);
+    }
+
+    delete resetTokens[token];
+
+    res.json({ status: "success", message: 'Password reset successful' });
+}
+
 exports.getProjectsFromUser = async (req, res, next) => {
 
     const userId = req.query.userId;
@@ -82,7 +163,7 @@ exports.getProjectsFromUser = async (req, res, next) => {
     try {
         const projects = await Project.find();
         const allProjectsFromUser = projects.filter((project) => project.users.includes(new mongoose.Types.ObjectId(userId)) || project.admin == userId);
-        return res.status(201).json({status: "success", projects: allProjectsFromUser });
+        return res.status(201).json({ status: "success", projects: allProjectsFromUser });
 
     } catch (error) {
         next(error);

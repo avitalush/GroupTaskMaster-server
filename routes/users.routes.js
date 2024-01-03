@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, editUser, deleteUser, getAllUsers, getUserById, getProjectsFromUser } = require("../controllers/user.controller");
+const { register, login, editUser, deleteUser, getAllUsers, getUserById, getProjectsFromUser, forgetPassword, resetPassword } = require("../controllers/user.controller");
 const router = express.Router();
 
 
@@ -11,6 +11,8 @@ router.delete("/deleteUser/:id", deleteUser);
 router.get("/getUserById", getUserById);
 router.get("/getAllUsers", getAllUsers);
 router.get("/getProjectsFromUser", getProjectsFromUser);
+router.post("/forgetPassword", forgetPassword);
+router.post("/resetPassword/:token", resetPassword);
 
 
 module.exports = router;
