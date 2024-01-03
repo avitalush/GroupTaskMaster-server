@@ -110,7 +110,7 @@ exports.forgetPassword = async (req, res, next) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Password Reset',
-            text: `Click on the following link to reset your password: http://localhost:1200/api/v1/users/resetPassword/${resetToken}`
+            text: `Click on the following link to reset your password: http://localhost:5173/resetpassword/${resetToken}`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
