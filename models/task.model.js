@@ -18,6 +18,18 @@ const taskSchema = new mongoose.Schema({
         required: true,
         default: new Date()
     },
+    date_to_done: {
+        type: Date,
+    },
+    date_inProgress: {
+        type: Date,
+    },
+    date_done: {
+        type: Date,
+    },
+    date_error: {
+        type: Date,
+    },
     status: {
         type: String,
         enum: {
