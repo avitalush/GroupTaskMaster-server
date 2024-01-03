@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs")
 const { User } = require("../models/User.model")
 const { Project } = require("../models/project.model")
+const { Task } = require("../models/task.model")
 const Joi = require("joi")
 const { generateToken } = require("../utils/jwt")
 const mongoose = require("mongoose");
@@ -104,7 +105,7 @@ exports.forgetPassword = async (req, res, next) => {
             }
         });
 
-        
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -225,7 +226,19 @@ exports.getUserById = async (req, res, next) => {
     }
 };
 
-
+exports.getAllTasks = async (req, res, next) => {
+    console.log("success from getAllTasks");
+    let userId = req.query.userId;
+    try {
+        const tasks = await Task.find({user: new mongoose.Types.ObjectId(userId)})
+        res.status(200).json({
+            status: "success",
+            tasks
+        });
+    } catch (error) {
+        next(error);
+    }
+}
 
 
 
