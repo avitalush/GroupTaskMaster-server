@@ -22,7 +22,7 @@ const UserJoiSchema = {
         password: Joi.string().max(20).required(),
         email: Joi.string().email({ tlds: { allow: ['com'] } }).error(() => Error('Email is not valid')),
         name: Joi.string().required(),
-        //pic: Joi.image(), //לברר איך כותבים
+        pic: Joi.string(), 
     })
 }
 
