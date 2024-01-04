@@ -109,6 +109,33 @@ exports.login = async (req, res, next) => {
     }
 };
 
+exports.loginAsAdmin = async (req, res, next) => {
+    console.log("success from loginAsAdmin");
+    const password = req.body;
+    log
+    try {
+        // const validate = UserJoiSchema.login.validate(body);
+        // if (validate.error) {
+        //     return next(Error(validate.error));
+        // }
+
+        //check is User exists
+        const admin = await User.findOne({ password });
+        // if exsits check if password match
+        if (!admin) {
+            return next(Error('Password is not correct'));
+        }
+        //* generate jwt token
+        const token = generateToken(admin);
+        const users = await User.find();
+
+        return res.status(201).json({ users, token });
+        // send the User object to the client
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.forgetPassword = async (req, res, next) => {
     console.log("success from forgetPassword");
     const email = req.body.email;
@@ -257,7 +284,7 @@ exports.getAllTasks = async (req, res, next) => {
     console.log("success from getAllTasks");
     let userId = req.query.userId;
     try {
-        const tasks = await Task.find({ user: new mongoose.Types.ObjectId(userId) })
+        const tasks = await Task.find({ id: new mongoose.Types.ObjectId(userId) })
         res.status(200).json({
             status: "success",
             tasks
