@@ -111,8 +111,7 @@ exports.login = async (req, res, next) => {
 
 exports.loginAsAdmin = async (req, res, next) => {
     console.log("success from loginAsAdmin");
-    const password = req.body;
-    log
+    const password = req.body.password;
     try {
         // const validate = UserJoiSchema.login.validate(body);
         // if (validate.error) {
@@ -120,16 +119,17 @@ exports.loginAsAdmin = async (req, res, next) => {
         // }
 
         //check is User exists
-        const admin = await User.findOne({ password });
-        // if exsits check if password match
-        if (!admin) {
+        const admin = await User.findOne({ _id: "659684c7cd13050f82b7d69a" });
+        if (! await bcrypt.compare(password, admin.password)) {
             return next(Error('Password is not correct'));
         }
         //* generate jwt token
         const token = generateToken(admin);
         const users = await User.find();
+        const projects = await Project.countDocuments();
+        const tasks = await Task.countDocuments();
 
-        return res.status(201).json({ users, token });
+        return res.status(201).json({ users, projects, tasks, token });
         // send the User object to the client
     } catch (error) {
         next(error);
@@ -284,7 +284,8 @@ exports.getAllTasks = async (req, res, next) => {
     console.log("success from getAllTasks");
     let userId = req.query.userId;
     try {
-        const tasks = await Task.find({ id: new mongoose.Types.ObjectId(userId) })
+        const tasks = await Task.find({ user: new mongoose.Types.ObjectId(userId) })
+        console.log(tasks);
         res.status(200).json({
             status: "success",
             tasks
