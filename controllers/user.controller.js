@@ -22,7 +22,7 @@ const UserJoiSchema = {
         password: Joi.string().max(20).required(),
         email: Joi.string().email({ tlds: { allow: ['com'] } }).error(() => Error('Email is not valid')),
         name: Joi.string().required(),
-        //pic: Joi.image(), //לברר איך כותבים
+        pic: Joi.string(), 
     })
 }
 
@@ -284,7 +284,7 @@ exports.getAllTasks = async (req, res, next) => {
     console.log("success from getAllTasks");
     let userId = req.query.userId;
     try {
-        const tasks = await Task.find({ id: new mongoose.Types.ObjectId(userId) })
+        const tasks = await Task.find({ user: new mongoose.Types.ObjectId(userId) })
         res.status(200).json({
             status: "success",
             tasks

@@ -243,6 +243,22 @@ exports.changeStatus = async (req, res, next) => {
             return res.status(400).json({ status: "fail", msg: "Only admin or associated user can change status" })
         }
         task.status = status
+        switch(status){
+            case "error":{
+                task.date_error=new Date();
+                break;
+            }
+            case "done":{
+                task.date_done=new Date();
+                break;
+            }
+            case "inProgress":{
+                task.date_inProgress=new Date();
+                break;
+            }
+default:
+    break;
+        }
         await task.save();
         return res.status(201).json({ status: "success" })
     } catch (error) {
